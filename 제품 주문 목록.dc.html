@@ -35,6 +35,11 @@
     .pf-paper { box-shadow: none !important; margin: 0 !important; max-width: none !important; padding: 8mm !important; }
     @page { size: A4 landscape; margin: 10mm; }
   }
+  .pf-imgbox { cursor: zoom-in; }
+  #pf-modal { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.7); align-items: center; justify-content: center; }
+  #pf-modal.open { display: flex; }
+  #pf-modal img { max-width: 90vw; max-height: 88vh; object-fit: contain; border-radius: 14px; box-shadow: 0 8px 60px rgba(0,0,0,.4); }
+  #pf-modal-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: #fff; font-size: 32px; cursor: pointer; line-height: 1; }
 </style>
 </helmet>
 <div id="pf-root" class="pf-paper" style="max-width: 1240px; margin: 40px auto; background: #ffffff; padding: 48px 44px 44px; box-shadow: 0 1px 50px rgba(0,0,0,.09);">
@@ -226,6 +231,11 @@
   </div>
 
 </div>
+
+<div id="pf-modal">
+  <button id="pf-modal-close" onclick="document.getElementById('pf-modal').classList.remove('open')">✕</button>
+  <img id="pf-modal-img" src="" alt="" />
+</div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1240, &quot;height&quot;: 920}}">
 class Component extends DCLogic {
@@ -245,6 +255,22 @@ class Component extends DCLogic {
       boxes.forEach((b, i) => {
         if (saved[i]) b.checked = true;
         b.addEventListener('change', save);
+      });
+
+      const modal = document.getElementById('pf-modal');
+      const modalImg = document.getElementById('pf-modal-img');
+      root.querySelectorAll('.pf-imgbox img').forEach(img => {
+        img.addEventListener('click', () => {
+          modalImg.src = img.src;
+          modalImg.alt = img.alt;
+          modal.classList.add('open');
+        });
+      });
+      modal.addEventListener('click', e => {
+        if (e.target === modal) modal.classList.remove('open');
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') modal.classList.remove('open');
       });
     } catch (e) {}
   }
