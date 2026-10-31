@@ -54,6 +54,8 @@
   .mbtns{display:flex;gap:10px;margin-top:22px}
   .mbtns button{flex:1;font:inherit;font-size:17px;font-weight:700;padding:16px;border-radius:14px;border:0;cursor:pointer}
   .mno{background:#eeeeea;color:var(--ink)}
+  .mskip{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;font-size:14px;color:var(--sub);cursor:pointer}
+  .mskip input{width:20px;height:20px;margin:0;accent-color:var(--accent)}
   .myes{background:var(--accent);color:#fff;flex:1.4!important}
 </style>
 </head>
@@ -78,6 +80,7 @@
   <div class="mtitle" id="mTitle"></div>
   <div class="mname" id="mName"></div>
   <div class="mbtns"><button type="button" class="mno" id="mNo">아직이에요</button><button type="button" class="myes" id="mYes">네, 담았어요</button></div>
+  <label class="mskip"><input type="checkbox" id="mSkip"><span>잘 챙길게요. 다음부터 묻지 않기</span></label>
 </div></div>
 <div class="bottom"><div class="in">
   <div class="side"><span class="lbl">전체 예상</span><span class="all" id="allAmt">0원</span></div>
@@ -121,15 +124,16 @@
     var bx=document.createElement("span"); bx.className="box"; bx.textContent=d?"✓":"";
     var tx=document.createElement("span"); tx.textContent=d?"바구니에 담았어요":"바구니에 담았나요?";
     ck.appendChild(bx); ck.appendChild(tx);
-    ck.onclick=function(){ if(done[it.id]){ delete done[it.id]; save(); render(); } else if(it.qty>=2){ openModal(it); } else { done[it.id]=true; save(); render(); } };
+    ck.onclick=function(){ if(done[it.id]){ delete done[it.id]; save(); render(); } else if(it.qty>=2 && !skip){ openModal(it); } else { done[it.id]=true; save(); render(); } };
     card.appendChild(ck); return li;
   }
-  var pendingItem=null;
-  function openModal(it){ pendingItem=it; $("mTitle").textContent=it.qty+"개 모두 담았나요?"; $("mName").textContent=it.name; $("modal").classList.add("open"); }
+  var pendingItem=null, skip=false;
+  try{ skip=localStorage.getItem("gunmart_skip_confirm")==="1"; }catch(e){}
+  function openModal(it){ pendingItem=it; $("mSkip").checked=false; $("mTitle").textContent=it.qty+"개 모두 담았나요?"; $("mName").textContent=it.name; $("modal").classList.add("open"); }
   function closeModal(){ $("modal").classList.remove("open"); pendingItem=null; }
   $("mNo").onclick=closeModal;
   $("modal").addEventListener("click",function(e){ if(e.target===this) closeModal(); });
-  $("mYes").onclick=function(){ var it=pendingItem; closeModal(); if(it) { done[it.id]=true; save(); render(); }; };
+  $("mYes").onclick=function(){ var it=pendingItem; closeModal(); if($("mSkip").checked){ skip=true; try{ localStorage.setItem("gunmart_skip_confirm","1"); }catch(e){} } if(it) { done[it.id]=true; save(); render(); }; };
   function render(){
     var todo=$("todo"), dn=$("done"); todo.textContent=""; dn.textContent="";
     var nd=0, all=0, got=0;
